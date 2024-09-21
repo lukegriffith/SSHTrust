@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"github.com/lukegriffith/SSHTrust/internal/client" // Update with the correct import path
-	"log"
-
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+	"log"
+	"os"
+	"strconv"
 )
 
 var caListCmd = &cobra.Command{
@@ -18,15 +20,18 @@ var caListCmd = &cobra.Command{
 			log.Fatalf("Error retrieving CA list: %v", err)
 		}
 
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Name", "Type", "Length"})
+
 		// Display the list of CAs
 		if len(cas) == 0 {
 			fmt.Println("No Certificate Authorities found.")
 		} else {
-			fmt.Println("Certificate Authorities:")
 			for _, ca := range cas {
-				fmt.Printf("Name: %s, Type: %s, Bits: %v\n", ca["name"], ca["type"], ca["bits"])
+				table.Append([]string{ca.Name, ca.Type, strconv.Itoa(ca.Bits)})
 			}
 		}
+		table.Render()
 	},
 }
 

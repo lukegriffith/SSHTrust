@@ -39,7 +39,7 @@ func GetCAPublicKey(id string) (string, error) {
 	return string(body), nil
 }
 
-func SignPublicKey(id, publicKey string) (string, error) {
+func SignPublicKey(id, publicKey string) (*cert.SignResponse, error) {
 	body := map[string]string{
 		"public_key": publicKey,
 	}
@@ -47,22 +47,26 @@ func SignPublicKey(id, publicKey string) (string, error) {
 
 	resp, err := http.Post(fmt.Sprintf("http://localhost:8080/CA/%s/Sign", id), "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
-		return "", fmt.Errorf("failed to sign public key: %w", err)
+		return nil, fmt.Errorf("failed to sign public key: %w", err)
 	}
 	defer resp.Body.Close()
 
 	signedKey, _ := io.ReadAll(resp.Body)
-	return string(signedKey), nil
+
+	var result cert.SignResponse
+	err = json.Unmarshal(signedKey, &result)
+
+	return &result, nil
 }
 
-func ListCAs() ([]map[string]interface{}, error) {
+func ListCAs() ([]cert.CaResponse, error) {
 	resp, err := http.Get("http://localhost:8080/CA")
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve CA list: %w", err)
 	}
 	defer resp.Body.Close()
 
-	var cas []map[string]interface{}
+	var cas []cert.CaResponse
 	err = json.NewDecoder(resp.Body).Decode(&cas)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse CA list: %w", err)

@@ -12,13 +12,6 @@ type App struct {
 	Store certStore.CAStore
 }
 
-type SignRequest struct {
-	PublicKey string `json:"public_key"`
-}
-type SignResponse struct {
-	SignedKey string `json:"signed_key"`
-}
-
 type MessageResponse struct {
 	Message string `json:"message"`
 }

@@ -24,7 +24,7 @@ var signCmd = &cobra.Command{
 		}
 
 		// Display the signed certificate
-		fmt.Printf("Signed certificate for public key:\n%s\n", signedKey)
+		fmt.Print(signedKey.SignedKey)
 	},
 }
 
@@ -32,4 +32,3 @@ func init() {
 	// Register the sign command under the root command
 	rootCmd.AddCommand(signCmd)
 }
-

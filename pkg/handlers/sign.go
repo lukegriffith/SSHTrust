@@ -27,7 +27,7 @@ func (a *App) Sign(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, ErrorResponse{"CA not found"})
 	}
 	// Parse the public key to be signed
-	var requestBody = &SignRequest{}
+	var requestBody = &cert.SignRequest{}
 
 	if err := c.Bind(requestBody); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{"Invalid request"})
@@ -45,7 +45,7 @@ func (a *App) Sign(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{"Failed to sign public key"})
 	}
 	c.Logger().Infof("Signed public key %s for %s", comment, CaID)
-	response := SignResponse{
+	response := cert.SignResponse{
 		SignedKey: string(ssh.MarshalAuthorizedKey(signedCert)),
 	}
 
