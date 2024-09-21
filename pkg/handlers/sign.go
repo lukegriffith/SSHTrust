@@ -14,8 +14,8 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param id path string true "CA ID"
-// @Param public_key body SignRequest true "Public key to be signed"
-// @Success 201 {object} SignResponse "The signed public key will be returned under the 'signed_key' field"
+// @Param public_key body cert.SignRequest true "Public key to be signed"
+// @Success 201 {object} cert.SignResponse "The signed public key will be returned under the 'signed_key' field"
 // @Failure 400 {object} ErrorResponse "Invalid request or failed to parse public key"
 // @Failure 404 {object} ErrorResponse "CA not found"
 // @Failure 500 {object} ErrorResponse "Failed to sign public key"

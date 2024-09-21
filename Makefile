@@ -1,3 +1,6 @@
+default: test gen build
+
+
 build:
 	go build -o sshtrust .
 

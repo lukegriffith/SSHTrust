@@ -144,7 +144,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.SignRequest"
+                            "$ref": "#/definitions/cert.SignRequest"
                         }
                     }
                 ],
@@ -152,7 +152,7 @@ const docTemplate = `{
                     "201": {
                         "description": "The signed public key will be returned under the 'signed_key' field",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SignResponse"
+                            "$ref": "#/definitions/cert.SignResponse"
                         }
                     },
                     "400": {
@@ -212,15 +212,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "handlers.SignRequest": {
+        "cert.SignRequest": {
             "type": "object",
             "properties": {
                 "public_key": {
@@ -228,10 +220,18 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.SignResponse": {
+        "cert.SignResponse": {
             "type": "object",
             "properties": {
                 "signed_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
                     "type": "string"
                 }
             }
