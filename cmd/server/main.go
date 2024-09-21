@@ -1,125 +1,50 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/lukegriffith/ssh-key-server/pkg/cert" // Import your cert package
-	"golang.org/x/crypto/ssh"
-	"log"
-	"net/http"
-	"sync"
+	"github.com/labstack/echo/v4"            // Echo core library
+	"github.com/labstack/echo/v4/middleware" // Optional Echo middleware
+	_ "github.com/lukegriffith/SSHTrust/docs"
+	"github.com/lukegriffith/SSHTrust/pkg/certStore"
+	"github.com/lukegriffith/SSHTrust/pkg/handlers" // Import your cert package
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-// In-memory storage for CAs
-var caStore = struct {
-	sync.RWMutex
-	cas map[string]ssh.Signer
-}{cas: make(map[string]ssh.Signer)}
+const (
+	port = ":8080"
+)
 
-// Endpoint 1: Create a new CA by name and store it in memory
-func createCAHandler(w http.ResponseWriter, r *http.Request) {
-	caName := r.URL.Query().Get("name")
-	if caName == "" {
-		http.Error(w, "Missing CA name", http.StatusBadRequest)
-		return
+// SetupServer configures the Echo instance and returns it for testing or running
+func SetupServer() *echo.Echo {
+	e := echo.New()
+	e.HideBanner = true
+	e.HidePort = true
+	e.Logger.SetLevel(2)
+
+	// Optional middleware for logging and recovery
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	// Serve the Swagger UI
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	App := handlers.App{
+		Store: certStore.NewInMemoryCaStore(),
 	}
 
-	// Use the existing GenerateSSHKey function from the cert package
-	signer, err := cert.GenerateSSHKey()
-	if err != nil {
-		http.Error(w, "Failed to generate CA keypair", http.StatusInternalServerError)
-		return
-	}
+	// Define routes and their corresponding handlers
+	e.GET("/CA", App.ListCA)         // List CAs
+	e.POST("/CA", App.CreateCA)      // Create a new CA
+	e.GET("/CA/:id", App.GetCA)      // Get a specific CA by ID
+	e.POST("/CA/:id/Sign", App.Sign) // Sign a public key with a specific CA
 
-	// Store the CA in memory
-	caStore.Lock()
-	caStore.cas[caName] = signer
-	caStore.Unlock()
-
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "CA '%s' created successfully", caName)
+	return e
 }
 
-// Endpoint 2: Obtain the CA's public key
-func getCAPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
-	caName := r.URL.Query().Get("name")
-	if caName == "" {
-		http.Error(w, "Missing CA name", http.StatusBadRequest)
-		return
-	}
-
-	// Get the CA from the in-memory store
-	caStore.RLock()
-	signer, exists := caStore.cas[caName]
-	caStore.RUnlock()
-
-	if !exists {
-		http.Error(w, "CA not found", http.StatusNotFound)
-		return
-	}
-
-	// Marshal the public key into a format that can be returned
-	publicKey := ssh.MarshalAuthorizedKey(signer.PublicKey())
-	w.WriteHeader(http.StatusOK)
-	w.Write(publicKey)
-}
-
-// Endpoint 3: Sign a public key with the CA
-func signPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
-	caName := r.URL.Query().Get("ca")
-	if caName == "" {
-		http.Error(w, "Missing CA name", http.StatusBadRequest)
-		return
-	}
-
-	// Get the CA from the in-memory store
-	caStore.RLock()
-	signer, exists := caStore.cas[caName]
-	caStore.RUnlock()
-
-	if !exists {
-		http.Error(w, "CA not found", http.StatusNotFound)
-		return
-	}
-
-	// Parse the public key to be signed
-	var requestBody struct {
-		PublicKey string `json:"public_key"`
-	}
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
-	if err != nil || requestBody.PublicKey == "" {
-		http.Error(w, "Invalid public key format", http.StatusBadRequest)
-		return
-	}
-
-	parsedPublicKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(requestBody.PublicKey))
-	if err != nil {
-		http.Error(w, "Failed to parse public key", http.StatusBadRequest)
-		return
-	}
-
-	// Sign the public key using the CA from the cert package
-	signedCert, err := cert.SignUserKey(signer, parsedPublicKey)
-	if err != nil {
-		http.Error(w, "Failed to sign public key", http.StatusInternalServerError)
-		return
-	}
-
-	// Return the signed certificate
-	signedCertBytes := ssh.MarshalAuthorizedKey(signedCert)
-	w.WriteHeader(http.StatusOK)
-	w.Write(signedCertBytes)
-}
-
-// HTTP server setup
 func main() {
-	http.HandleFunc("/create-ca", createCAHandler)
-	http.HandleFunc("/get-ca-public-key", getCAPublicKeyHandler)
-	http.HandleFunc("/sign-public-key", signPublicKeyHandler)
+	e := SetupServer()
 
-	log.Println("Starting HTTP server on :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	e.Logger.Printf("SSHTrust Started on %s", port)
+	if err := e.Start(port); err != nil {
+		e.Logger.Fatal(err)
 	}
 }
-

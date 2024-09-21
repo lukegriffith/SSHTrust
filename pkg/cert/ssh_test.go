@@ -121,7 +121,7 @@ func startSSHServer(caPublicKey ssh.PublicKey) (net.Listener, error) {
 // TestGenerateSSHCertificateEndToEnd tests end-to-end SSH certificate signing and server validation
 func TestGenerateSSHCertificateEndToEnd(t *testing.T) {
 	// Step 1: Generate the SSH CA keypair (this is the key that will sign certificates)
-	sshCA, err := GenerateSSHKey()
+	sshCA, err := GenerateSSHKey(2048)
 	if err != nil {
 		t.Fatalf("Failed to generate CA keypair: %v", err)
 	}
@@ -150,13 +150,13 @@ func TestGenerateSSHCertificateEndToEnd(t *testing.T) {
 	defer listener.Close()
 
 	// Step 5: Generate a user keypair (this will simulate a user's public key)
-	userPrivateKey, err := GenerateSSHKey()
+	userPrivateKey, err := GenerateSSHKey(2048)
 	if err != nil {
 		t.Fatalf("Failed to generate user keypair: %v", err)
 	}
 
 	// Step 6: Sign the user's public key with the CA
-	signedCert, err := SignUserKey(sshCA, userPrivateKey.PublicKey())
+	signedCert, err := SignUserKey(sshCA, userPrivateKey.PublicKey(), []string{"testuser"})
 	if err != nil {
 		t.Fatalf("Failed to sign user's public key: %v", err)
 	}

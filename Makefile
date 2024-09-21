@@ -1,4 +1,6 @@
 
 test:
-	go test -fullpath -v ./...
+	go test -fullpath ./...
 
+gen:
+	swag init -g cmd/server/main.go

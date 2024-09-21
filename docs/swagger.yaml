@@ -1,0 +1,151 @@
+definitions:
+  cert.CaRequest:
+    properties:
+      bits:
+        description: Key length
+        type: integer
+      name:
+        description: Name of CA
+        type: string
+      type:
+        description: Type of ca, rsa, ed25519
+        type: string
+    type: object
+  cert.CaResponse:
+    properties:
+      bits:
+        type: integer
+      name:
+        type: string
+      public_key:
+        type: string
+      type:
+        type: string
+    type: object
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.SignRequest:
+    properties:
+      public_key:
+        type: string
+    type: object
+  handlers.SignResponse:
+    properties:
+      signed_key:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /CA:
+    get:
+      description: Retrieve a list of all CAs stored in the in-memory store.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all CAs
+          schema:
+            items:
+              $ref: '#/definitions/cert.CaResponse'
+            type: array
+      summary: List all Certificate Authorities (CAs)
+      tags:
+      - CAs
+    post:
+      consumes:
+      - application/json
+      description: Create a new SSH CA and store it in the applications store.
+      parameters:
+      - description: New CA
+        in: body
+        name: CA
+        required: true
+        schema:
+          $ref: '#/definitions/cert.CaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: The newly created CA
+          schema:
+            $ref: '#/definitions/cert.CaResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Could not create CA
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Create a new SSH Certificate Authority (CA)
+      tags:
+      - CAs
+  /CA/{id}:
+    get:
+      description: Retrieve a CA by its ID from the applications store.
+      parameters:
+      - description: CA ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cert.CaResponse'
+        "404":
+          description: CA not found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Get a SSH Certificate Authority (CA) by ID
+      tags:
+      - CAs
+  /CA/{id}/Sign:
+    post:
+      consumes:
+      - application/json
+      description: Use the specified CA to sign a provided public key and return the
+        signed key.
+      parameters:
+      - description: CA ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Public key to be signed
+        in: body
+        name: public_key
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SignRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: The signed public key will be returned under the 'signed_key'
+            field
+          schema:
+            $ref: '#/definitions/handlers.SignResponse'
+        "400":
+          description: Invalid request or failed to parse public key
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: CA not found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Failed to sign public key
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Sign a public key with a specific CA
+      tags:
+      - CAs
+swagger: "2.0"

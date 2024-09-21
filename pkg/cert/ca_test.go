@@ -1,50 +1,33 @@
 package cert
 
-import (
-	"os"
-	"testing"
-)
+import "testing"
 
-// TestGenerateSSHKey tests the generation of an SSH keypair
-func TestGenerateSSHKey(t *testing.T) {
-	signer, err := GenerateSSHKey()
-	if err != nil {
-		t.Fatalf("Failed to generate SSH keypair: %v", err)
+func TestCaValidation(t *testing.T) {
+	table := []struct {
+		ca  CaRequest
+		res bool
+	}{
+		// Test cases
+		{CaRequest{Name: "TestCA", Type: "rsa", Bits: 2048}, true},          // Valid case
+		{CaRequest{Name: "TestCA", Type: "rsa", Bits: 3072}, true},          // Valid case
+		{CaRequest{Name: "TestCA", Type: "rsa", Bits: 4096}, true},          // Valid case
+		{CaRequest{Name: "TestCA", Type: "ED25519", Bits: 2048}, false},     // Invalid case (wrong Type)
+		{CaRequest{Name: "TestCA", Type: "rsa", Bits: 1024}, false},         // Invalid case (wrong Bits)
+		{CaRequest{Name: "TestCA", Type: "rsa", Bits: 8192}, false},         // Invalid case (unsupported Bits)
+		{CaRequest{Name: "", Type: "rsa", Bits: 2048}, false},               // Invalid case (missing Name)
+		{CaRequest{Name: "TestCA", Type: "InvalidType", Bits: 2048}, false}, // Invalid case (wrong Type)
+		{CaRequest{Name: "TestCA", Type: "rsa", Bits: 1234}, false},         // Invalid case (wrong Bits)
+		{CaRequest{Name: "TestCA", Type: "", Bits: 2048}, false},            // Invalid case (empty Type)
+		{CaRequest{Name: "TestCA", Type: "rsa", Bits: 0}, false},            // Invalid case (Bits = 0)
 	}
 
-	if signer == nil {
-		t.Fatal("Expected signer, got nil")
+	// Loop through test cases
+	for _, tt := range table {
+		t.Run(tt.ca.Name, func(t *testing.T) {
+			result := tt.ca.Validate()
+			if result != tt.res {
+				t.Errorf("expected %v, got %v", tt.res, result)
+			}
+		})
 	}
-
-	// Validate that the generated key is a valid SSH public key
-	publicKey := signer.PublicKey()
-	if publicKey == nil {
-		t.Fatalf("Generated key is not a valid SSH public key: %v", err)
-	}
-}
-
-// TestSavePublicKey tests the saving of the public key to a file
-func TestSavePublicKey(t *testing.T) {
-	// Generate a test signer (SSH keypair)
-	signer, err := GenerateSSHKey()
-	if err != nil {
-		t.Fatalf("Failed to generate SSH keypair: %v", err)
-	}
-
-	// Define a temporary file path to save the public key
-	filePath := "test_ssh_ca.pub"
-
-	// Call SavePublicKey and check if it writes the file correctly
-	err = SavePublicKey(signer, filePath)
-	if err != nil {
-		t.Fatalf("Failed to save public key: %v", err)
-	}
-
-	// Check if the file was created
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		t.Fatalf("Expected public key file %s to be created, but it doesn't exist", filePath)
-	}
-
-	// Clean up by removing the test file
-	os.Remove(filePath)
 }
