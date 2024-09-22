@@ -185,7 +185,7 @@ const docTemplate = `{
                     "description": "Key length",
                     "type": "integer"
                 },
-                "max_ttl_minutess": {
+                "max_ttl_minutes": {
                     "description": "Maximum TTL certs can be signed for",
                     "type": "integer"
                 },
@@ -197,7 +197,7 @@ const docTemplate = `{
                     "description": "Type of ca, rsa, ed25519",
                     "type": "string"
                 },
-                "validPrincipals": {
+                "valid_principals": {
                     "description": "List of Valid Principals",
                     "type": "array",
                     "items": {
@@ -229,7 +229,7 @@ const docTemplate = `{
                     "description": "Type of ca, rsa, ed25519",
                     "type": "string"
                 },
-                "validPrincipals": {
+                "valid_principals": {
                     "description": "List of Valid Principals",
                     "type": "array",
                     "items": {

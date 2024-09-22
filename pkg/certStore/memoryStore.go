@@ -54,12 +54,7 @@ func (store *InMemortCaStore) CreateCA(CAReq cert.CaRequest) (*cert.CaResponse, 
 		return nil, errors.New("failed to generate CA keypair")
 	}
 
-	c := cert.CA{
-		Name:   CAReq.Name,
-		Signer: signer,
-		Bits:   CAReq.Bits,
-	}
-
+	c := cert.NewCA(CAReq.Name, signer, CAReq.ValidPrincipals, CAReq.Bits, CAReq.MaxTTLMinutes)
 	store.Lock()
 	store.cas[CAReq.Name] = c
 	store.Unlock()

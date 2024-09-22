@@ -14,6 +14,7 @@ type SignRequest struct {
 	// How long the certificate is valid for
 	TTLMinutes int `json:"ttl_minutes"`
 }
+
 type SignResponse struct {
 	// Signed certificate by the CA
 	SignedKey string `json:"signed_key"`

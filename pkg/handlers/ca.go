@@ -60,6 +60,7 @@ func (a *App) CreateCA(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{"Invalid request"})
 	}
 
+	c.Logger().Info("new ca requested ", newCA.Name, newCA.MaxTTLMinutes)
 	// Call the service to create the CA
 	createdCA, err := a.Store.CreateCA(newCA)
 

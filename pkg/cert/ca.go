@@ -13,6 +13,16 @@ type CA struct {
 	ValidPrincipals []string
 }
 
+func NewCA(name string, signer ssh.Signer, validPrincipals []string, bits, maxTtl int) CA {
+	return CA{
+		Name:            name,
+		Signer:          signer,
+		ValidPrincipals: validPrincipals,
+		Bits:            bits,
+		MaxTTLMinutes:   maxTtl,
+	}
+}
+
 func (c CA) CreateResponse() *CaResponse {
 	return &CaResponse{
 		Name:            c.Name,
@@ -32,9 +42,9 @@ type CaRequest struct {
 	// Key length
 	Bits int `json:"bits"`
 	// Maximum TTL certs can be signed for
-	MaxTTLMinutes int `json:"max_ttl_minutess"`
+	MaxTTLMinutes int `json:"max_ttl_minutes"`
 	// List of Valid Principals
-	ValidPrincipals []string
+	ValidPrincipals []string `json:"valid_principals"`
 }
 
 func (c CaRequest) Validate() (error, bool) {
@@ -68,5 +78,5 @@ type CaResponse struct {
 	// Maximum TTL certs can be signed for
 	MaxTTLMinutes int `json:"max_ttl_minutess"`
 	// List of Valid Principals
-	ValidPrincipals []string
+	ValidPrincipals []string `json:"valid_principals"`
 }
