@@ -13,7 +13,8 @@ The project consists of:
    - Creates in-memory CAs (Certificate Authorities) and stores them.
    - Signs SSH public keys using the in-memory CA.
    - Provides CA public keys for use in external systems (like the SSH server).
-2. Docker test suite to demonstrate the use case. 
+2. A client to interact with the server
+3. Docker test suite to demonstrate the use case. 
 
 ## Roadmap
 
@@ -23,6 +24,14 @@ The project consists of:
    - etcd
 
 2. Implement user authentication & acl
+
+## Installation
+
+Project is still in early development, and requires golang to be installed to install the system
+
+```bash
+go install github.com/lukegriffith/SSHTrust
+```
 
 ## API Documentation
 Swagger UI is enabled for this project. You can access it by navigating to the below link when the server is active locally:
