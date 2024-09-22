@@ -15,52 +15,21 @@ The project consists of:
    - Provides CA public keys for use in external systems (like the SSH server).
 2. Docker test suite to demonstrate the use case. 
 
+## Roadmap
+
+1. Support external storage backend
+   - sql lite
+   - postgres
+   - etcd
+
+2. Implement user authentication & acl
 
 ## API Documentation
 Swagger UI is enabled for this project. You can access it by navigating to the below link when the server is active locally:
 
 [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
-### HTTP API Endpoints
-
-#### 1. Create a CA
-- **URL**: `/CA`
-- **Method**: `POST`
-- **Description**: This endpoint generates a new SSH Certificate Authority (CA) and stores it in memory under the given name.
-- **Example**:
-   ```bash
-   curl localhost:8080/CA -X POST \
-      -H "Content-Type: application/json" \
-      -d '{"name": "MyCA", "bits": 2048, "type": "rsa"}'
-   ```
-
-#### 2. Get the CA Public Key
-- **URL**: `/CA/:id`
-- **Method**: `GET`
-- **Description**: Retrieves the public key of the CA stored under the specified name, which can be used by other systems to verify certificates signed by the CA.
-- **Example**:
-   ```bash
-   curl -s "http://localhost:8080/CA/MyCA" | jq -r .public_key > ssh_ca.pub
-   ```
-
-#### 3. Sign a Public Key
-- **URL**: `/CA/:id/Sign`
-- **Method**: `POST`
-- **Description**: Signs a public key with the specified CA. The public key should be provided in the body of the request as a JSON object in the format `{"public_key": "<public_key>"}`. The API responds with the signed certificate.
-- **Example**:
-   ```bash
-   curl -X POST http://localhost:8080/CA/MyCA/Sign \
-    -H "Content-Type: application/json" \
-    -d "{\"public_key\": \"$(cat ~/.ssh/id_ed25519.pub)\", \"principals\": [\"testuser\"], \"ttl_minutes\": 50}"
-   ```
-
-- To store the signed certificate in a file:
-   ```bash
-    curl -X POST http://localhost:8080/CA/MyCA/Sign \
-    -H "Content-Type: application/json" \
-    -d "{\"public_key\": \"$(cat ~/.ssh/id_ed25519.pub)\"}" \
-   | jq -r .signed_key > ~/.ssh/id_ed25519-cert.pub
-   ```
+The API developer docs are located here as well [api docs](API.md)
 
 ## Test SSH Server
 
@@ -96,7 +65,7 @@ Once the SSH server is running, configured with a CA from the server. you can SS
 
 1. **Sign your Public Key**: 
    ```
-   ./sshtrust sign -n myca --ttl 30 -p testuser -k "$(cat ~/.ssh/id_ed25519)" > ~/.ssh/id_ed25519-cert.pub
+   ./sshtrust sign -n myca --ttl 30 -p testuser -k "$(cat ~/.ssh/id_ed25519.pub)" > ~/.ssh/id_ed25519-cert.pub
    ```
 
 2. **SSH into the Server**:
@@ -107,7 +76,3 @@ Once the SSH server is running, configured with a CA from the server. you can SS
 ### SSH Server Setup Recap:
 - **Public Key**: The CA’s public key (`ssh_ca.pub`) is copied to the SSH server and used to validate certificates.
 - **Docker**: The SSH server runs inside a Docker container and listens on port 2222.
-
-## Conclusion
-
-This project provides a simple, functional setup for SSH certificate-based authentication using in-memory CAs. It includes a fully functioning HTTP API to create and manage CAs, sign SSH keys, and a Dockerized SSH server that verifies SSH certificates issued by the CA. This setup is ideal for environments where certificate-based SSH authentication is required for enhanced security and control.
