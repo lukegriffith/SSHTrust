@@ -17,6 +17,8 @@ func TestCreateCASuccess(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when creating CA")
 	assert.NotNil(t, ca, "CA should not be nil")
 	assert.Equal(t, "test-ca", ca.Name, "CA name should match")
+	assert.Equal(t, []string{"testuser"}, ca.ValidPrincipals, "Principals should match")
+	assert.Equal(t, 3600, ca.MaxTTLMinutes, "TTL should match")
 }
 
 // Test for CreateCA failure case (duplicate CA)
