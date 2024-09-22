@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"errors"
-
+	"fmt"
 	"github.com/lukegriffith/SSHTrust/pkg/cert"
 	"golang.org/x/crypto/ssh"
 )
@@ -27,7 +27,7 @@ func (store *InMemortCaStore) GetCAByID(ID string) (*cert.CaResponse, error) {
 	if value, exists := store.cas[ID]; exists {
 		return value.CreateResponse(), nil
 	}
-	return nil, errors.New("Unable to find CA by ID")
+	return nil, errors.New("unable to find CA by ID")
 }
 
 func (store *InMemortCaStore) GetSignerByID(ID string) (ssh.Signer, error) {
@@ -41,17 +41,17 @@ func (store *InMemortCaStore) GetSignerByID(ID string) (ssh.Signer, error) {
 
 func (store *InMemortCaStore) CreateCA(CAReq cert.CaRequest) (*cert.CaResponse, error) {
 
-	if !CAReq.Validate() {
-		return nil, errors.New("Invalid CA Request")
+	if err, ok := CAReq.Validate(); !ok {
+		return nil, fmt.Errorf("invalid CA request: %w", err)
 	}
 	store.RLock()
 	if _, exists := store.cas[CAReq.Name]; exists {
-		return nil, errors.New("CA Already Exists")
+		return nil, errors.New("CA already exists")
 	}
 	store.RUnlock()
 	signer, err := cert.GenerateSSHKey(CAReq.Bits)
 	if err != nil {
-		return nil, errors.New("Failed to generate CA keypair")
+		return nil, errors.New("failed to generate CA keypair")
 	}
 
 	c := cert.CA{
