@@ -156,7 +156,7 @@ func TestGenerateSSHCertificateEndToEnd(t *testing.T) {
 	}
 
 	// Step 6: Sign the user's public key with the CA
-	signedCert, err := SignUserKey(sshCA, userPrivateKey.PublicKey(), []string{"testuser"})
+	signedCert, err := SignUserKey(sshCA, userPrivateKey.PublicKey(), []string{"testuser"}, 3600)
 	if err != nil {
 		t.Fatalf("Failed to sign user's public key: %v", err)
 	}

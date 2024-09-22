@@ -17,7 +17,7 @@ import (
 // Mock the CAStore for testing purposes
 type MockStore struct {
 	caMap   map[string]*cert.CaResponse
-	signers map[string]string
+	signers map[string]ssh.Signer
 }
 
 func (m *MockStore) GetCAByID(ID string) (*cert.CaResponse, error) {
@@ -50,7 +50,7 @@ func (m *MockStore) ListCAs() ([]*cert.CaResponse, error) {
 
 func (m *MockStore) GetSignerByID(ID string) (ssh.Signer, error) {
 	// Mock implementation for signers
-	return nil, nil
+	return m.signers[ID], nil
 }
 
 // Test for GetCA handler

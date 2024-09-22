@@ -4,31 +4,37 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/lukegriffith/SSHTrust/pkg/cert"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/lukegriffith/SSHTrust/pkg/cert"
+	"github.com/lukegriffith/SSHTrust/pkg/handlers"
 )
 
-func CreateCA(name string, bits int, keyType string) error {
-	body := cert.CaRequest{
-		Name: name,
-		Bits: bits,
-		Type: keyType,
-	}
+func CreateCA(body cert.CaRequest) error {
 	jsonValue, _ := json.Marshal(body)
-
 	resp, err := http.Post("http://localhost:8080/CA", "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return fmt.Errorf("failed to create CA: %w", err)
 	}
-	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		var errorMessage handlers.ErrorResponse
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("error unmarshalling api error: %v", err)
+		}
 
+		err = json.Unmarshal(bodyBytes, &errorMessage)
+		return fmt.Errorf("failed to create CA: %v - %s", resp.StatusCode, errorMessage)
+	}
+	defer resp.Body.Close()
 	log.Println("CA created successfully")
 	return nil
 }
 
-func GetCAPublicKey(id string) (string, error) {
+func GetCA(id string) (string, error) {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:8080/CA/%s", id))
 	if err != nil {
 		return "", fmt.Errorf("failed to get CA public key: %w", err)
@@ -39,15 +45,22 @@ func GetCAPublicKey(id string) (string, error) {
 	return string(body), nil
 }
 
-func SignPublicKey(id, publicKey string) (*cert.SignResponse, error) {
-	body := map[string]string{
-		"public_key": publicKey,
-	}
+func SignPublicKey(id string, body cert.SignRequest) (*cert.SignResponse, error) {
 	jsonValue, _ := json.Marshal(body)
 
 	resp, err := http.Post(fmt.Sprintf("http://localhost:8080/CA/%s/Sign", id), "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign public key: %w", err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		var errorMessage handlers.ErrorResponse
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshalling api error: %v", err)
+		}
+
+		err = json.Unmarshal(bodyBytes, &errorMessage)
+		return nil, fmt.Errorf("failed to create CA: %v - %s", resp.StatusCode, errorMessage)
 	}
 	defer resp.Body.Close()
 

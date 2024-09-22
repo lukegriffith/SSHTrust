@@ -21,14 +21,14 @@ var caListCmd = &cobra.Command{
 		}
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name", "Type", "Length"})
+		table.SetHeader([]string{"Name", "Type", "Length", "MaxTTL"})
 
 		// Display the list of CAs
 		if len(cas) == 0 {
 			fmt.Println("No Certificate Authorities found.")
 		} else {
 			for _, ca := range cas {
-				table.Append([]string{ca.Name, ca.Type, strconv.Itoa(ca.Bits)})
+				table.Append([]string{ca.Name, ca.Type, strconv.Itoa(ca.Bits), strconv.Itoa(ca.MaxTTLMinutes)})
 			}
 		}
 		table.Render()

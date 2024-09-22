@@ -17,13 +17,13 @@ var caGetCmd = &cobra.Command{
 		id := args[0]
 
 		// Call the client library to retrieve the CA's public key
-		publicKey, err := client.GetCAPublicKey(id)
+		ca, err := client.GetCA(id)
 		if err != nil {
 			log.Fatalf("Error retrieving CA public key: %v", err)
 		}
 
 		// Display the public key
-		fmt.Println(publicKey)
+		fmt.Println(ca)
 	},
 }
 

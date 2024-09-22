@@ -11,12 +11,14 @@ import (
 func TestCreateCASuccess(t *testing.T) {
 	store := NewInMemoryCaStore()
 	// Using the actual CA struct instead of mockCA
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048}
+	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
 
 	ca, err := store.CreateCA(mockRequest)
 	assert.NoError(t, err, "Expected no error when creating CA")
 	assert.NotNil(t, ca, "CA should not be nil")
 	assert.Equal(t, "test-ca", ca.Name, "CA name should match")
+	assert.Equal(t, []string{"testuser"}, ca.ValidPrincipals, "Principals should match")
+	assert.Equal(t, 3600, ca.MaxTTLMinutes, "TTL should match")
 }
 
 // Test for CreateCA failure case (duplicate CA)
@@ -24,7 +26,7 @@ func TestCreateCADuplicate(t *testing.T) {
 	store := &InMemortCaStore{
 		cas: make(map[string]cert.CA),
 	}
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048}
+	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
 
 	// First CA creation should succeed
 	_, err := store.CreateCA(mockRequest)
@@ -33,7 +35,7 @@ func TestCreateCADuplicate(t *testing.T) {
 	// Second CA creation with the same name should fail
 	_, err = store.CreateCA(mockRequest)
 	assert.Error(t, err, "Expected error when creating duplicate CA")
-	assert.Equal(t, "CA Already Exists", err.Error(), "Expected 'CA Already Exists' error")
+	assert.Equal(t, "CA already exists", err.Error(), "Expected 'CA already exists' error")
 }
 
 // Test for GetCAByID success case
@@ -43,7 +45,7 @@ func TestGetCAByIDSuccess(t *testing.T) {
 	}
 
 	// Create CA and add it to the store
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048}
+	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
 	ca, _ := store.CreateCA(mockRequest)
 
 	// Retrieve CA by ID
@@ -63,7 +65,7 @@ func TestGetCAByIDNotFound(t *testing.T) {
 	retrievedCA, err := store.GetCAByID("non-existent-ca")
 	assert.Error(t, err, "Expected error when retrieving non-existent CA")
 	assert.Nil(t, retrievedCA, "Retrieved CA should be nil")
-	assert.Equal(t, "Unable to find CA by ID", err.Error(), "Expected 'Unable to find CA by ID' error")
+	assert.Equal(t, "unable to find CA by ID", err.Error(), "Expected 'unable to find CA by ID' error")
 }
 
 // Test for GetSignerByID success case
@@ -73,7 +75,7 @@ func TestGetSignerByIDSuccess(t *testing.T) {
 	}
 
 	// Create CA and add it to the store
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048}
+	mockRequest := cert.CaRequest{Name: "test-ca", Type: "rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
 	store.CreateCA(mockRequest)
 
 	// Retrieve Signer by ID
@@ -102,8 +104,8 @@ func TestListCAs(t *testing.T) {
 	}
 
 	// Add two CAs to the store
-	mockRequest1 := cert.CaRequest{Name: "test-ca1", Type: "rsa", Bits: 2048}
-	mockRequest2 := cert.CaRequest{Name: "test-ca2", Type: "rsa", Bits: 2048}
+	mockRequest1 := cert.CaRequest{Name: "test-ca1", Type: "rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
+	mockRequest2 := cert.CaRequest{Name: "test-ca2", Type: "rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
 	store.CreateCA(mockRequest1)
 	store.CreateCA(mockRequest2)
 
