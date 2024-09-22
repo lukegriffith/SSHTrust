@@ -162,7 +162,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "CA not found",
+                        "description": "Requested principals not in valid principal list",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
@@ -185,6 +185,10 @@ const docTemplate = `{
                     "description": "Key length",
                     "type": "integer"
                 },
+                "max_ttl_minutess": {
+                    "description": "Maximum TTL certs can be signed for",
+                    "type": "integer"
+                },
                 "name": {
                     "description": "Name of CA",
                     "type": "string"
@@ -192,6 +196,13 @@ const docTemplate = `{
                 "type": {
                     "description": "Type of ca, rsa, ed25519",
                     "type": "string"
+                },
+                "validPrincipals": {
+                    "description": "List of Valid Principals",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -199,24 +210,51 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "bits": {
+                    "description": "Key length",
+                    "type": "integer"
+                },
+                "max_ttl_minutess": {
+                    "description": "Maximum TTL certs can be signed for",
                     "type": "integer"
                 },
                 "name": {
+                    "description": "Name of CA",
                     "type": "string"
                 },
                 "public_key": {
+                    "description": "CA Public Key",
                     "type": "string"
                 },
                 "type": {
+                    "description": "Type of ca, rsa, ed25519",
                     "type": "string"
+                },
+                "validPrincipals": {
+                    "description": "List of Valid Principals",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
         "cert.SignRequest": {
             "type": "object",
             "properties": {
+                "principals": {
+                    "description": "List of valid principals, usernames",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "public_key": {
+                    "description": "Public key material to be signed",
                     "type": "string"
+                },
+                "ttl_minutes": {
+                    "description": "How long the certificate is valid for",
+                    "type": "integer"
                 }
             }
         },
@@ -224,6 +262,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "signed_key": {
+                    "description": "Signed certificate by the CA",
                     "type": "string"
                 }
             }
