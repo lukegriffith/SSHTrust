@@ -51,7 +51,7 @@ Swagger UI is enabled for this project. You can access it by navigating to the b
    ```bash
    curl -X POST http://localhost:8080/CA/MyCA/Sign \
     -H "Content-Type: application/json" \
-    -d "{\"public_key\": \"$(cat ~/.ssh/id_ed25519.pub)\"}"
+    -d "{\"public_key\": \"$(cat ~/.ssh/id_ed25519.pub)\", \"principals\": [\"testuser\"], \"ttl_minutes\": 50}"
    ```
 
 - To store the signed certificate in a file:
@@ -71,13 +71,12 @@ This project also includes an OpenSSH server running in a Docker container, whic
 1. **Make the server binary**: Using the golang compiler and the make file, create the sshtrust binary
    ```
    make
-   file ./sshtrust # should exist
    ```
 
 2. **Create a CA for Docker build**: Using the server, create a new CA under the project directory for the server to copy
    ```
    ./sshtrust serve &
-   ./sshtrust ca new -n myca
+   ./sshtrust ca new -n myca -p testuser
    ./sshtrust ca get myca | jq .public_key -r > ssh_ca.pub
    ```
 
@@ -97,7 +96,7 @@ Once the SSH server is running, configured with a CA from the server. you can SS
 
 1. **Sign your Public Key**: 
    ```
-   ./sshtrust sign myca "$(cat ~/.ssh/id_ed25519)" > ~/.ssh/id_ed25519-cert.pub
+   ./sshtrust sign -n myca --ttl 30 -p testuser -k "$(cat ~/.ssh/id_ed25519)" > ~/.ssh/id_ed25519-cert.pub
    ```
 
 2. **SSH into the Server**:
