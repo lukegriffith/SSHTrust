@@ -23,7 +23,7 @@ var caGetCmd = &cobra.Command{
 		}
 
 		// Display the public key
-		fmt.Printf("Public key for CA '%s':\n%s\n", id, publicKey)
+		fmt.Println(publicKey)
 	},
 }
 
@@ -31,4 +31,3 @@ func init() {
 	// Register the get command under the ca command
 	caCmd.AddCommand(caGetCmd)
 }
-

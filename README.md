@@ -68,21 +68,25 @@ This project also includes an OpenSSH server running in a Docker container, whic
 
 ### Steps to Build and Run the Test Docker SSH Server
 
-1. **Create a CA for Docker build**: Using the server, create a new CA under the project directory for the server to copy
+1. **Make the server binary**: Using the golang compiler and the make file, create the sshtrust binary
    ```
-   go run cmd/server/main.go &
-   curl localhost:8080/CA -X POST \
-      -H "Content-Type: application/json" \
-      -d '{"name": "MyCA", "bits": 2048, "type": "rsa"}' \
-   | jq -r .public_key > ssh_ca.pub
+   make
+   file ./sshtrust # should exist
    ```
 
-2. **Build the Docker Image**:
+2. **Create a CA for Docker build**: Using the server, create a new CA under the project directory for the server to copy
+   ```
+   ./sshtrust serve &
+   ./sshtrust ca new -n myca
+   ./sshtrust ca get myca | jq .public_key -r > ssh_ca.pub
+   ```
+
+3. **Build the Docker Image**:
    ```
    docker build -t ssh-server -f ssh-test-server.Dockerfile .
    ```
 
-3. **Run the Docker SSH Server**:
+4. **Run the Docker SSH Server**:
    ```
    docker run -d -p 2222:22 --name my-ssh-server ssh-server
    ```
@@ -93,10 +97,7 @@ Once the SSH server is running, configured with a CA from the server. you can SS
 
 1. **Sign your Public Key**: 
    ```
-   curl -X POST http://localhost:8080/CA/MyCA/Sign \
-    -H "Content-Type: application/json" \
-    -d "{\"public_key\": \"$(cat ~/.ssh/id_ed25519.pub)\"}" \
-   | jq -r .signed_key > ~/.ssh/id_ed25519-cert.pub
+   ./sshtrust sign myca "$(cat ~/.ssh/id_ed25519)" > ~/.ssh/id_ed25519-cert.pub
    ```
 
 2. **SSH into the Server**:
