@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"github.com/labstack/echo/v4"            // Echo core library
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	port = ":8080"
+	Port = ":8080"
 )
 
 // SetupServer configures the Echo instance and returns it for testing or running
@@ -38,13 +38,4 @@ func SetupServer() *echo.Echo {
 	e.POST("/CA/:id/Sign", App.Sign) // Sign a public key with a specific CA
 
 	return e
-}
-
-func main() {
-	e := SetupServer()
-
-	e.Logger.Printf("SSHTrust Started on %s", port)
-	if err := e.Start(port); err != nil {
-		e.Logger.Fatal(err)
-	}
 }

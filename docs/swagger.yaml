@@ -22,19 +22,19 @@ definitions:
       type:
         type: string
     type: object
-  handlers.ErrorResponse:
-    properties:
-      error:
-        type: string
-    type: object
-  handlers.SignRequest:
+  cert.SignRequest:
     properties:
       public_key:
         type: string
     type: object
-  handlers.SignResponse:
+  cert.SignResponse:
     properties:
       signed_key:
+        type: string
+    type: object
+  handlers.ErrorResponse:
+    properties:
+      error:
         type: string
     type: object
 info:
@@ -124,7 +124,7 @@ paths:
         name: public_key
         required: true
         schema:
-          $ref: '#/definitions/handlers.SignRequest'
+          $ref: '#/definitions/cert.SignRequest'
       produces:
       - application/json
       responses:
@@ -132,7 +132,7 @@ paths:
           description: The signed public key will be returned under the 'signed_key'
             field
           schema:
-            $ref: '#/definitions/handlers.SignResponse'
+            $ref: '#/definitions/cert.SignResponse'
         "400":
           description: Invalid request or failed to parse public key
           schema:

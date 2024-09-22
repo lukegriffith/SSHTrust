@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+type SignRequest struct {
+	PublicKey string `json:"public_key"`
+}
+type SignResponse struct {
+	SignedKey string `json:"signed_key"`
+}
+
 // SignUserKey signs a user's public key using the CA private key.
 // It returns a signed SSH certificate.
 func SignUserKey(caSigner ssh.Signer, userPublicKey ssh.PublicKey, principals []string) (*ssh.Certificate, error) {
