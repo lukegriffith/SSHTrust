@@ -3,7 +3,7 @@
 
 ## SSH CA Key Signing Server
 
-This project is a simple rest API that generates SSH Certificate Authorities (CA), signs SSH public keys using those CAs.
+This project is a simple rest API that generates SSH Certificate Authorities (CA) and signs SSH public keys using those CAs.
 
 
 ## Project Overview
