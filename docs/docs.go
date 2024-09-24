@@ -217,7 +217,7 @@ const docTemplate = `{
                     "description": "Key length",
                     "type": "integer"
                 },
-                "max_ttl_minutess": {
+                "max_ttl_minutes": {
                     "description": "Maximum TTL certs can be signed for",
                     "type": "integer"
                 },

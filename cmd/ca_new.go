@@ -26,11 +26,13 @@ var caNewCmd = &cobra.Command{
 			log.Fatal("CA name is required")
 		}
 		body := cert.CaRequest{
-			Name:            name,
-			Bits:            bits,
-			Type:            cert.KeyType(keyType),
-			ValidPrincipals: strings.Split(principals, ","),
-			MaxTTLMinutes:   ttl,
+			CommonCa: cert.CommonCa{
+				Name:            name,
+				Bits:            bits,
+				Type:            cert.KeyType(keyType),
+				ValidPrincipals: strings.Split(principals, ","),
+				MaxTTLMinutes:   ttl,
+			},
 		}
 		log.Println(body)
 		err := client.CreateCA(body)

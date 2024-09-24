@@ -11,7 +11,7 @@ import (
 func TestCreateCASuccess(t *testing.T) {
 	store := NewInMemoryCaStore()
 	// Using the actual CA struct instead of mockCA
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
+	mockRequest := cert.CaRequest{cert.CommonCa{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}}
 
 	ca, err := store.CreateCA(mockRequest)
 	assert.NoError(t, err, "Expected no error when creating CA")
@@ -26,7 +26,7 @@ func TestCreateCADuplicate(t *testing.T) {
 	store := &InMemortCaStore{
 		cas: make(map[string]cert.CA),
 	}
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
+	mockRequest := cert.CaRequest{cert.CommonCa{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}}
 
 	// First CA creation should succeed
 	_, err := store.CreateCA(mockRequest)
@@ -45,7 +45,7 @@ func TestGetCAByIDSuccess(t *testing.T) {
 	}
 
 	// Create CA and add it to the store
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
+	mockRequest := cert.CaRequest{cert.CommonCa{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}}
 	ca, _ := store.CreateCA(mockRequest)
 
 	// Retrieve CA by ID
@@ -75,7 +75,7 @@ func TestGetSignerByIDSuccess(t *testing.T) {
 	}
 
 	// Create CA and add it to the store
-	mockRequest := cert.CaRequest{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
+	mockRequest := cert.CaRequest{cert.CommonCa{Name: "test-ca", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}}
 	store.CreateCA(mockRequest)
 
 	// Retrieve Signer by ID
@@ -104,8 +104,8 @@ func TestListCAs(t *testing.T) {
 	}
 
 	// Add two CAs to the store
-	mockRequest1 := cert.CaRequest{Name: "test-ca1", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
-	mockRequest2 := cert.CaRequest{Name: "test-ca2", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}
+	mockRequest1 := cert.CaRequest{cert.CommonCa{Name: "test-ca1", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}}
+	mockRequest2 := cert.CaRequest{cert.CommonCa{Name: "test-ca2", Type: "ssh-rsa", Bits: 2048, ValidPrincipals: []string{"testuser"}, MaxTTLMinutes: 3600}}
 	store.CreateCA(mockRequest1)
 	store.CreateCA(mockRequest2)
 

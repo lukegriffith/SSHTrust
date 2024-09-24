@@ -32,9 +32,11 @@ func (m *MockStore) CreateCA(ca cert.CaRequest) (*cert.CaResponse, error) {
 		return nil, errors.New("CA already exists")
 	}
 	resp := &cert.CaResponse{
-		Name: ca.Name,
-		Type: ca.Type,
-		Bits: ca.Bits,
+		CommonCa: cert.CommonCa{
+			Name: ca.Name,
+			Type: ca.Type,
+			Bits: ca.Bits,
+		},
 	}
 	m.caMap[ca.Name] = resp
 	return resp, nil
@@ -59,7 +61,7 @@ func TestGetCAHandler(t *testing.T) {
 
 	mockStore := &MockStore{
 		caMap: map[string]*cert.CaResponse{
-			"test-ca": {Name: "test-ca", PublicKey: "test-public-key"},
+			"test-ca": {CommonCa: cert.CommonCa{Name: "test-ca"}, PublicKey: "test-public-key"},
 		},
 	}
 	app := &App{Store: mockStore}
@@ -155,8 +157,8 @@ func TestListCAHandler(t *testing.T) {
 
 	mockStore := &MockStore{
 		caMap: map[string]*cert.CaResponse{
-			"ca1": {Name: "ca1", PublicKey: "publickey1"},
-			"ca2": {Name: "ca2", PublicKey: "publickey2"},
+			"ca1": {CommonCa: cert.CommonCa{Name: "ca1"}, PublicKey: "publickey1"},
+			"ca2": {CommonCa: cert.CommonCa{Name: "ca2"}, PublicKey: "publickey2"},
 		},
 	}
 	app := &App{Store: mockStore}

@@ -25,16 +25,18 @@ func NewCA(name string, signer ssh.Signer, validPrincipals []string, bits, maxTt
 
 func (c CA) CreateResponse() *CaResponse {
 	return &CaResponse{
-		Name:            c.Name,
-		PublicKey:       string(ssh.MarshalAuthorizedKey(c.Signer.PublicKey())),
-		Type:            KeyType(c.Signer.PublicKey().Type()),
-		Bits:            c.Bits,
-		MaxTTLMinutes:   c.MaxTTLMinutes,
-		ValidPrincipals: c.ValidPrincipals,
+		CommonCa: CommonCa{
+			Name:            c.Name,
+			Type:            KeyType(c.Signer.PublicKey().Type()),
+			Bits:            c.Bits,
+			MaxTTLMinutes:   c.MaxTTLMinutes,
+			ValidPrincipals: c.ValidPrincipals,
+		},
+		PublicKey: string(ssh.MarshalAuthorizedKey(c.Signer.PublicKey())),
 	}
 }
 
-type CaRequest struct {
+type CommonCa struct {
 	// Name of CA
 	Name string `json:"name"`
 	// Type of ca, rsa, ed25519
@@ -45,6 +47,10 @@ type CaRequest struct {
 	MaxTTLMinutes int `json:"max_ttl_minutes"`
 	// List of Valid Principals
 	ValidPrincipals []string `json:"valid_principals"`
+}
+
+type CaRequest struct {
+	CommonCa
 }
 
 func (c CaRequest) Validate() (error, bool) {
@@ -68,16 +74,7 @@ func (c CaRequest) Validate() (error, bool) {
 }
 
 type CaResponse struct {
-	// Name of CA
-	Name string `json:"name"`
-	// Type of ca, rsa, ed25519
-	Type KeyType `json:"type"`
-	// Key length
-	Bits int `json:"bits"`
+	CommonCa
 	// CA Public Key
 	PublicKey string `json:"public_key"`
-	// Maximum TTL certs can be signed for
-	MaxTTLMinutes int `json:"max_ttl_minutess"`
-	// List of Valid Principals
-	ValidPrincipals []string `json:"valid_principals"`
 }

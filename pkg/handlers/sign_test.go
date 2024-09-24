@@ -62,9 +62,11 @@ func TestSignHandler(t *testing.T) {
 	mockStore := &MockStore{
 		caMap: map[string]*cert.CaResponse{
 			"test-ca": {
-				Name:            "test-ca",
-				MaxTTLMinutes:   60,
-				ValidPrincipals: []string{"user1", "user2"},
+				CommonCa: cert.CommonCa{
+					Name:            "test-ca",
+					MaxTTLMinutes:   60,
+					ValidPrincipals: []string{"user1", "user2"},
+				},
 			},
 		},
 		signers: map[string]ssh.Signer{
