@@ -28,7 +28,7 @@ var caListCmd = &cobra.Command{
 			fmt.Println("No Certificate Authorities found.")
 		} else {
 			for _, ca := range cas {
-				table.Append([]string{ca.Name, ca.Type, strconv.Itoa(ca.Bits), strconv.Itoa(ca.MaxTTLMinutes)})
+				table.Append([]string{ca.Name, string(ca.Type), strconv.Itoa(ca.Bits), strconv.Itoa(ca.MaxTTLMinutes)})
 			}
 		}
 		table.Render()

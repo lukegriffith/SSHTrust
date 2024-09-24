@@ -11,8 +11,9 @@ definitions:
         description: Name of CA
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/cert.KeyType'
         description: Type of ca, rsa, ed25519
-        type: string
       valid_principals:
         description: List of Valid Principals
         items:
@@ -34,14 +35,23 @@ definitions:
         description: CA Public Key
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/cert.KeyType'
         description: Type of ca, rsa, ed25519
-        type: string
       valid_principals:
         description: List of Valid Principals
         items:
           type: string
         type: array
     type: object
+  cert.KeyType:
+    enum:
+    - ssh-rsa
+    - ssh-ed25519
+    type: string
+    x-enum-varnames:
+    - RSAKey
+    - ED25519
   cert.SignRequest:
     properties:
       principals:

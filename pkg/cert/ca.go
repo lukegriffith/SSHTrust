@@ -27,7 +27,7 @@ func (c CA) CreateResponse() *CaResponse {
 	return &CaResponse{
 		Name:            c.Name,
 		PublicKey:       string(ssh.MarshalAuthorizedKey(c.Signer.PublicKey())),
-		Type:            c.Signer.PublicKey().Type(),
+		Type:            KeyType(c.Signer.PublicKey().Type()),
 		Bits:            c.Bits,
 		MaxTTLMinutes:   c.MaxTTLMinutes,
 		ValidPrincipals: c.ValidPrincipals,
@@ -38,7 +38,7 @@ type CaRequest struct {
 	// Name of CA
 	Name string `json:"name"`
 	// Type of ca, rsa, ed25519
-	Type string `json:"type"`
+	Type KeyType `json:"type"`
 	// Key length
 	Bits int `json:"bits"`
 	// Maximum TTL certs can be signed for
@@ -51,10 +51,11 @@ func (c CaRequest) Validate() (error, bool) {
 	if c.Name == "" {
 		return errors.New("invalid name"), false
 	}
-	if c.Type != "rsa" {
-		return errors.New("invalid type"), false
+	if c.Type != RSAKey && c.Type != ED25519 {
+		return InvalidKeyErr, false
 	}
-	if !(c.Bits == 2048 || c.Bits == 3072 || c.Bits == 4096) {
+	if !(c.Bits == 2048 || c.Bits == 3072 || c.Bits == 4096) &&
+		c.Type != ED25519 {
 		return errors.New("invalid key length"), false
 	}
 	if len(c.ValidPrincipals) < 1 {
@@ -70,7 +71,7 @@ type CaResponse struct {
 	// Name of CA
 	Name string `json:"name"`
 	// Type of ca, rsa, ed25519
-	Type string `json:"type"`
+	Type KeyType `json:"type"`
 	// Key length
 	Bits int `json:"bits"`
 	// CA Public Key

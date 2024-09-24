@@ -1,15 +1,27 @@
 package cert
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/rsa"
-	"golang.org/x/crypto/ssh"
+	"errors"
 	"os"
+
+	"golang.org/x/crypto/ssh"
 )
 
+type KeyType string
+
+const (
+	RSAKey  KeyType = "ssh-rsa"
+	ED25519 KeyType = "ssh-ed25519"
+)
+
+var InvalidKeyErr error = errors.New("unsupported key type")
+
 // GenerateSSHKey generates a new SSH keypair with a 4096-bit RSA private key
-func GenerateSSHKey(bits int) (ssh.Signer, error) {
-	privateKey, err := generatePrivateKey(bits)
+func GenerateSSHKey(keyType KeyType, bits int) (ssh.Signer, error) {
+	privateKey, err := generatePrivateKey(keyType, bits)
 	if err != nil {
 		return nil, err
 	}
@@ -23,12 +35,23 @@ func GenerateSSHKey(bits int) (ssh.Signer, error) {
 }
 
 // generatePrivateKey generates a new RSA private key
-func generatePrivateKey(bits int) (*rsa.PrivateKey, error) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
-	if err != nil {
-		return nil, err
+func generatePrivateKey(keyType KeyType, bits int) (interface{}, error) {
+	switch keyType {
+	case RSAKey:
+		privateKey, err := rsa.GenerateKey(rand.Reader, bits)
+		if err != nil {
+			return nil, err
+		}
+		return privateKey, nil
+	case ED25519:
+		_, privateKey, err := ed25519.GenerateKey(rand.Reader)
+		if err != nil {
+			return nil, err
+		}
+		return privateKey, nil
+	default:
+		return nil, InvalidKeyErr
 	}
-	return privateKey, nil
 }
 
 // SavePublicKey saves the public key from the SSH signer to a file
