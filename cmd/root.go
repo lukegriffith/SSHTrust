@@ -8,8 +8,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "main",
-	Short: "CLI for managing SSH Certificate Authorities and starting the server",
+	Use:   "sshtrust",
+	Short: "CLI for managing SSH Certificate Authorities and starting the CA server",
 }
 
 func Execute() {
