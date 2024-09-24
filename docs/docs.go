@@ -249,8 +249,8 @@ const docTemplate = `{
         "cert.KeyType": {
             "type": "string",
             "enum": [
-                "rsa",
-                "ed25519"
+                "ssh-rsa",
+                "ssh-ed25519"
             ],
             "x-enum-varnames": [
                 "RSAKey",

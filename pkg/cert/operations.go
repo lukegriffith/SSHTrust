@@ -13,8 +13,8 @@ import (
 type KeyType string
 
 const (
-	RSAKey  KeyType = "rsa"
-	ED25519 KeyType = "ed25519"
+	RSAKey  KeyType = "ssh-rsa"
+	ED25519 KeyType = "ssh-ed25519"
 )
 
 var InvalidKeyErr error = errors.New("unsupported key type")
@@ -26,9 +26,6 @@ func GenerateSSHKey(keyType KeyType, bits int) (ssh.Signer, error) {
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
 	// Create an SSH signer using the generated private key
 	signer, err := ssh.NewSignerFromKey(privateKey)
 	if err != nil {

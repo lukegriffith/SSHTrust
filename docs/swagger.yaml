@@ -46,8 +46,8 @@ definitions:
     type: object
   cert.KeyType:
     enum:
-    - rsa
-    - ed25519
+    - ssh-rsa
+    - ssh-ed25519
     type: string
     x-enum-varnames:
     - RSAKey
