@@ -195,7 +195,11 @@ const docTemplate = `{
                 },
                 "type": {
                     "description": "Type of ca, rsa, ed25519",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cert.KeyType"
+                        }
+                    ]
                 },
                 "valid_principals": {
                     "description": "List of Valid Principals",
@@ -227,7 +231,11 @@ const docTemplate = `{
                 },
                 "type": {
                     "description": "Type of ca, rsa, ed25519",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cert.KeyType"
+                        }
+                    ]
                 },
                 "valid_principals": {
                     "description": "List of Valid Principals",
@@ -237,6 +245,17 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "cert.KeyType": {
+            "type": "string",
+            "enum": [
+                "rsa",
+                "ed25519"
+            ],
+            "x-enum-varnames": [
+                "RSAKey",
+                "ED25519"
+            ]
         },
         "cert.SignRequest": {
             "type": "object",

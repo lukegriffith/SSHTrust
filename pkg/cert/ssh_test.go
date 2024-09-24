@@ -120,78 +120,80 @@ func startSSHServer(caPublicKey ssh.PublicKey) (net.Listener, error) {
 
 // TestGenerateSSHCertificateEndToEnd tests end-to-end SSH certificate signing and server validation
 func TestGenerateSSHCertificateEndToEnd(t *testing.T) {
-	// Step 1: Generate the SSH CA keypair (this is the key that will sign certificates)
-	sshCA, err := GenerateSSHKey(2048)
-	if err != nil {
-		t.Fatalf("Failed to generate CA keypair: %v", err)
-	}
+	for _, key := range keyTypeList {
+		// Step 1: Generate the SSH CA keypair (this is the key that will sign certificates)
+		sshCA, err := GenerateSSHKey(key, 2048)
+		if err != nil {
+			t.Fatalf("Failed to generate CA keypair: %v", err)
+		}
 
-	// Step 2: Save the public key for the CA (to simulate it being known to the server)
-	err = SavePublicKey(sshCA, "test_ca.pub")
-	if err != nil {
-		t.Fatalf("Failed to save CA public key: %v", err)
-	}
+		// Step 2: Save the public key for the CA (to simulate it being known to the server)
+		err = SavePublicKey(sshCA, "test_ca.pub")
+		if err != nil {
+			t.Fatalf("Failed to save CA public key: %v", err)
+		}
 
-	// Step 3: Load the saved CA public key for use by the SSH server
-	caPublicKeyBytes, err := os.ReadFile("test_ca.pub")
-	if err != nil {
-		t.Fatalf("Failed to read CA public key file: %v", err)
-	}
-	caPublicKey, _, _, _, err := ssh.ParseAuthorizedKey(caPublicKeyBytes)
-	if err != nil {
-		t.Fatalf("Failed to parse CA public key: %v", err)
-	}
+		// Step 3: Load the saved CA public key for use by the SSH server
+		caPublicKeyBytes, err := os.ReadFile("test_ca.pub")
+		if err != nil {
+			t.Fatalf("Failed to read CA public key file: %v", err)
+		}
+		caPublicKey, _, _, _, err := ssh.ParseAuthorizedKey(caPublicKeyBytes)
+		if err != nil {
+			t.Fatalf("Failed to parse CA public key: %v", err)
+		}
 
-	// Step 4: Start the SSH server
-	listener, err := startSSHServer(caPublicKey)
-	if err != nil {
-		t.Fatalf("Failed to start SSH server: %v", err)
-	}
-	defer listener.Close()
+		// Step 4: Start the SSH server
+		listener, err := startSSHServer(caPublicKey)
+		if err != nil {
+			t.Fatalf("Failed to start SSH server: %v", err)
+		}
+		defer listener.Close()
 
-	// Step 5: Generate a user keypair (this will simulate a user's public key)
-	userPrivateKey, err := GenerateSSHKey(2048)
-	if err != nil {
-		t.Fatalf("Failed to generate user keypair: %v", err)
-	}
+		// Step 5: Generate a user keypair (this will simulate a user's public key)
+		userPrivateKey, err := GenerateSSHKey(key, 2048)
+		if err != nil {
+			t.Fatalf("Failed to generate user keypair: %v", err)
+		}
 
-	// Step 6: Sign the user's public key with the CA
-	signedCert, err := SignUserKey(sshCA, userPrivateKey.PublicKey(), []string{"testuser"}, 3600)
-	if err != nil {
-		t.Fatalf("Failed to sign user's public key: %v", err)
-	}
+		// Step 6: Sign the user's public key with the CA
+		signedCert, err := SignUserKey(sshCA, userPrivateKey.PublicKey(), []string{"testuser"}, 3600)
+		if err != nil {
+			t.Fatalf("Failed to sign user's public key: %v", err)
+		}
 
-	// Step 7: Create an SSH client that connects to the server using the signed certificate
-	clientConfig := &ssh.ClientConfig{
-		User: "testuser",
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(&signedCertSigner{
-				signer: userPrivateKey, // The user's private key (to sign the request)
-				cert:   signedCert,     // The signed certificate
-			}),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Ignoring server host key for simplicity in testing
-	}
+		// Step 7: Create an SSH client that connects to the server using the signed certificate
+		clientConfig := &ssh.ClientConfig{
+			User: "testuser",
+			Auth: []ssh.AuthMethod{
+				ssh.PublicKeys(&signedCertSigner{
+					signer: userPrivateKey, // The user's private key (to sign the request)
+					cert:   signedCert,     // The signed certificate
+				}),
+			},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Ignoring server host key for simplicity in testing
+		}
 
-	// Step 8: Connect to the SSH server
-	address := listener.Addr().String()
-	client, err := ssh.Dial("tcp", address, clientConfig)
-	if err != nil {
-		t.Fatalf("Failed to connect to SSH server: %v", err)
-	}
-	defer client.Close()
+		// Step 8: Connect to the SSH server
+		address := listener.Addr().String()
+		client, err := ssh.Dial("tcp", address, clientConfig)
+		if err != nil {
+			t.Fatalf("Failed to connect to SSH server: %v", err)
+		}
+		defer client.Close()
 
-	// Step 9: Validate the client is accepted by the server
-	session, err := client.NewSession()
-	if err != nil {
-		t.Fatalf("Failed to create SSH session: %v", err)
-	}
-	defer session.Close()
+		// Step 9: Validate the client is accepted by the server
+		session, err := client.NewSession()
+		if err != nil {
+			t.Fatalf("Failed to create SSH session: %v", err)
+		}
+		defer session.Close()
 
-	// Run a basic command to validate that the server accepts the certificate
-	err = session.Run("echo success")
-	if err != nil {
-		t.Fatalf("Failed to run command on SSH server: %v", err)
+		// Run a basic command to validate that the server accepts the certificate
+		err = session.Run("echo success")
+		if err != nil {
+			t.Fatalf("Failed to run command on SSH server: %v", err)
+		}
 	}
 }
 

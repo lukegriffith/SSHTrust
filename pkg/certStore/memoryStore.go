@@ -49,7 +49,7 @@ func (store *InMemortCaStore) CreateCA(CAReq cert.CaRequest) (*cert.CaResponse, 
 		return nil, errors.New("CA already exists")
 	}
 	store.RUnlock()
-	signer, err := cert.GenerateSSHKey(CAReq.Bits)
+	signer, err := cert.GenerateSSHKey(CAReq.Type, CAReq.Bits)
 	if err != nil {
 		return nil, errors.New("failed to generate CA keypair")
 	}
