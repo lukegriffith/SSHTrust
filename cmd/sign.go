@@ -42,7 +42,7 @@ func init() {
 	signCmd.Flags().StringP("name", "n", "", "Name of the CA")
 	signCmd.Flags().StringP("public_key", "k", "", "Public key to be signed")
 	signCmd.Flags().StringP("principals", "p", "", "Comma-separated list of principals for the certificate")
-	signCmd.Flags().Int("ttl", 60, "Time to live for the certificate in seconds")
+	signCmd.Flags().Int("ttl", 60, "Time to live for the certificate in minutes")
 
 	// Optionally, mark flags as required
 	_ = signCmd.MarkFlagRequired("name")

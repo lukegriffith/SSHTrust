@@ -48,7 +48,7 @@ func init() {
 	caNewCmd.Flags().IntP("bits", "b", 2048, "Key size in bits (optional)")
 	caNewCmd.Flags().StringP("type", "t", "ssh-rsa", "Key type (optional, ssh-rsa, ssh-ed25519)")
 	caNewCmd.Flags().StringP("validPrincipals", "p", "", "comma separated principals (required)")
-	caNewCmd.Flags().Int("ttl", 60, "Maximim TTL the CA permits")
+	caNewCmd.Flags().Int("ttl", 60, "Maximim TTL in minutes the CA permits")
 
 	_ = signCmd.MarkFlagRequired("name")
 	_ = signCmd.MarkFlagRequired("principals")
