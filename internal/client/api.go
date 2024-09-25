@@ -1,23 +1,33 @@
 package client
 
 import (
-	"errors"
-	"io/ioutil"
+	"bytes"
+	"fmt"
 	"net/http"
 )
 
+type MethodType string
+
+var (
+	POST MethodType = "POST"
+	GET  MethodType = "GET"
+)
+
 // Helper function for making HTTP GET requests
-func MakeGetRequest(url string) (string, error) {
-	resp, err := http.Get(url)
+func MakeRequest(method MethodType, url string, body []byte, tokenFunc func() (string, error)) (*http.Request, error) {
+	req, err := http.NewRequest(string(method), url, bytes.NewBuffer(body))
 	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.New("request failed with status " + resp.Status)
+		return nil, fmt.Errorf("Error creating request %w", err)
 	}
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	return string(body), nil
+	token, err := tokenFunc()
+	if err != nil {
+		return nil, fmt.Errorf("Failed making request %w", err)
+	}
+	bearer := fmt.Sprintf("Bearer %s", token)
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", bearer)
+
+	return req, nil
 }
