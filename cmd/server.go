@@ -9,8 +9,12 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the server",
 	Run: func(cmd *cobra.Command, args []string) {
-		e := server.SetupServer()
+		noAuth, _ := cmd.Flags().GetBool("no-auth")
+		e := server.SetupServer(noAuth)
 		e.Logger.Printf("SSHTrust Started on %s", server.Port)
+		if noAuth {
+			e.Logger.Printf("No auth enabled %t", noAuth)
+		}
 		if err := e.Start(server.Port); err != nil {
 			e.Logger.Fatal(err)
 		}
@@ -19,5 +23,7 @@ var serveCmd = &cobra.Command{
 }
 
 func init() {
+	serveCmd.Flags().Bool("no-auth", false, "Enable user auth")
 	rootCmd.AddCommand(serveCmd)
+
 }

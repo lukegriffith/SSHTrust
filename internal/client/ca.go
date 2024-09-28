@@ -1,11 +1,9 @@
 package client
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -15,13 +13,20 @@ import (
 
 func CreateCA(body cert.CaRequest) error {
 	jsonValue, _ := json.Marshal(body)
-	resp, err := http.Post("http://localhost:8080/CA", "application/json", bytes.NewBuffer(jsonValue))
+	req, err := MakeRequest(POST, "http://localhost:8080/CA", jsonValue, readToken)
+
+	if err != nil {
+		return fmt.Errorf("failed to create request %w", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		return fmt.Errorf("failed to create CA: %w", err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		var errorMessage handlers.ErrorResponse
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("error unmarshalling api error: %v", err)
 		}
@@ -35,7 +40,15 @@ func CreateCA(body cert.CaRequest) error {
 }
 
 func GetCA(id string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:8080/CA/%s", id))
+
+	req, err := MakeRequest(GET, fmt.Sprintf("http://localhost:8080/CA/%s", id), nil, readToken)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to create request %w", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		return "", fmt.Errorf("failed to get CA public key: %w", err)
 	}
@@ -48,19 +61,26 @@ func GetCA(id string) (string, error) {
 func SignPublicKey(id string, body cert.SignRequest) (*cert.SignResponse, error) {
 	jsonValue, _ := json.Marshal(body)
 
-	resp, err := http.Post(fmt.Sprintf("http://localhost:8080/CA/%s/Sign", id), "application/json", bytes.NewBuffer(jsonValue))
+	req, err := MakeRequest(POST, fmt.Sprintf("http://localhost:8080/CA/%s/Sign", id), jsonValue, readToken)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request %w", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign public key: %w", err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		var errorMessage handlers.ErrorResponse
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("error unmarshalling api error: %v", err)
 		}
 
 		err = json.Unmarshal(bodyBytes, &errorMessage)
-		return nil, fmt.Errorf("failed to create CA: %v - %s", resp.StatusCode, errorMessage)
+		return nil, fmt.Errorf("failed to sign key: %v - %s", resp.StatusCode, errorMessage)
 	}
 	defer resp.Body.Close()
 
@@ -73,7 +93,15 @@ func SignPublicKey(id string, body cert.SignRequest) (*cert.SignResponse, error)
 }
 
 func ListCAs() ([]cert.CaResponse, error) {
-	resp, err := http.Get("http://localhost:8080/CA")
+
+	req, err := MakeRequest(GET, "http://localhost:8080/CA", nil, readToken)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request %w", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve CA list: %w", err)
 	}
