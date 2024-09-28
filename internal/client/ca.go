@@ -80,7 +80,7 @@ func SignPublicKey(id string, body cert.SignRequest) (*cert.SignResponse, error)
 		}
 
 		err = json.Unmarshal(bodyBytes, &errorMessage)
-		return nil, fmt.Errorf("failed to create CA: %v - %s", resp.StatusCode, errorMessage)
+		return nil, fmt.Errorf("failed to sign key: %v - %s", resp.StatusCode, errorMessage)
 	}
 	defer resp.Body.Close()
 

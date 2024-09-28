@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -19,14 +20,15 @@ func MakeRequest(method MethodType, url string, body []byte, tokenFunc func() (s
 	if err != nil {
 		return nil, fmt.Errorf("Error creating request %w", err)
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	token, err := tokenFunc()
 	if err != nil {
-		return nil, fmt.Errorf("Failed making request %w", err)
+		log.Println("Unable to find token")
+		return req, nil
 	}
 	bearer := fmt.Sprintf("Bearer %s", token)
 
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", bearer)
 
 	return req, nil

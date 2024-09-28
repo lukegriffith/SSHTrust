@@ -45,7 +45,7 @@ func TestMakeRequestErrorCreatingRequest(t *testing.T) {
 	assert.Contains(t, err.Error(), "Error creating request") // Check that the error is related to creating the request
 }
 
-func TestMakeRequestErrorReadingToken(t *testing.T) {
+func TestMakeRequestErrorReadingTokenReturnOK(t *testing.T) {
 	// Mock readToken to return an error
 	mockReadToken = func() (string, error) {
 		return "", errors.New("token read error")
@@ -67,7 +67,9 @@ func TestMakeRequestErrorReadingToken(t *testing.T) {
 	req, err := MakeRequest(method, url, body, mockReadToken)
 
 	// Assertions
-	assert.Nil(t, req)                                       // Ensure the request is nil
-	assert.Error(t, err)                                     // Ensure an error occurred
-	assert.Contains(t, err.Error(), "Failed making request") // Check that the error is related to the token
+	assert.Nil(t, err)
+	assert.NotNil(t, req)                                               // Ensure the request is not nil
+	assert.Equal(t, "application/json", req.Header.Get("Content-Type")) // Check the Content-Type header
+	assert.Equal(t, string(method), req.Method)                         // Ensure the method is correct
+	assert.Equal(t, url, req.URL.String())                              // Ensure the URL is correctassert.Nil(t, err) // Ensure the request is nil
 }

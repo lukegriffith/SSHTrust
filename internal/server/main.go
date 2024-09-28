@@ -16,7 +16,7 @@ const (
 )
 
 // SetupServer configures the Echo instance and returns it for testing or running
-func SetupServer() *echo.Echo {
+func SetupServer(noAuth bool) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -33,17 +33,19 @@ func SetupServer() *echo.Echo {
 		Store: certStore.NewInMemoryCaStore(),
 	}
 
+	var ca *echo.Group
 	e.POST("/login", auth.Login)
-
-	ca := e.Group("/CA")
-	ca.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey: auth.JWTSecret,
-	}))
+	if noAuth {
+		ca = e.Group("/CA")
+	} else {
+		ca = e.Group("/CA", echojwt.WithConfig(echojwt.Config{
+			SigningKey: auth.JWTSecret,
+		}))
+	}
 	// Define routes and their corresponding handlers
-	ca.GET("/", App.ListCA)        // List CAs
-	ca.POST("/", App.CreateCA)     // Create a new CA
+	ca.GET("", App.ListCA)         // List CAs
+	ca.POST("", App.CreateCA)      // Create a new CA
 	ca.GET("/:id", App.GetCA)      // Get a specific CA by ID
 	ca.POST("/:id/Sign", App.Sign) // Sign a public key with a specific CA
-
 	return e
 }
