@@ -26,9 +26,9 @@ func SetupServer(noAuth bool) *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// TODO: do this properly, externally, hashed + salted, etc
+	// TODO: do this properly and salt
 	auth.Users = &certStore.InMemoryUserList{}
-
+	// TODO: not this, load from config
 	auth.JWTSecret = []byte("secret")
 
 	// Serve the Swagger UI
