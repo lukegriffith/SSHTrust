@@ -8,7 +8,8 @@ import (
 
 func TestMainFunction(t *testing.T) {
 	// Mock Echo instance (as in SetupServer)
-	e := SetupServer()
+	auth := false
+	e := SetupServer(auth)
 
 	// We do not actually start the server in the test.
 	// Instead, we check that the instance has the expected routes and properties.

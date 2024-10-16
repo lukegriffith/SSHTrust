@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/lukegriffith/SSHTrust/internal/client" // Update with the correct import path
+	"github.com/lukegriffith/SSHTrust/internal/client"
 	"log"
 
 	"github.com/spf13/cobra"

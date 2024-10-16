@@ -53,7 +53,7 @@ This project also includes an OpenSSH server running in a Docker container, whic
 
 2. **Create a CA for Docker build**: Using the server, create a new CA under the project directory for the server to copy
    ```
-   ./sshtrust serve &
+   ./sshtrust serve --no-auth &
    ./sshtrust ca new -n myca -p testuser
    ./sshtrust ca get myca | jq .public_key -r > ssh_ca.pub
    ```
