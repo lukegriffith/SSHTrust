@@ -19,6 +19,27 @@ type TokenResponse struct {
 	Token string `json:"token"` // Adjust this if the token key in the response JSON is different
 }
 
+func Register(body auth.User) error {
+	jsonValue, _ := json.Marshal(body)
+	resp, err := http.Post("http://localhost:8080/register", "application/json", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		return fmt.Errorf("failed to register: %w", err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		var errorMessage handlers.ErrorResponse
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("error unmarshalling api error: %v", err)
+		}
+
+		err = json.Unmarshal(bodyBytes, &errorMessage)
+		return fmt.Errorf("failed to register: %v - %s", resp.StatusCode, errorMessage)
+	}
+	defer resp.Body.Close()
+	// Read the response body
+	return nil
+}
+
 func Login(body auth.User) error {
 
 	homeDir, err := os.UserHomeDir()

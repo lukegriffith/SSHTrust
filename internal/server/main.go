@@ -26,6 +26,11 @@ func SetupServer(noAuth bool) *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// TODO: do this properly, externally, hashed + salted, etc
+	auth.Users = &certStore.InMemoryUserList{}
+
+	auth.JWTSecret = []byte("secret")
+
 	// Serve the Swagger UI
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
@@ -35,6 +40,7 @@ func SetupServer(noAuth bool) *echo.Echo {
 
 	var ca *echo.Group
 	e.POST("/login", auth.Login)
+	e.POST("/register", auth.Register)
 	if noAuth {
 		ca = e.Group("/CA")
 	} else {
