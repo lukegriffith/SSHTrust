@@ -19,11 +19,13 @@ The project consists of:
 ## Roadmap
 
 1. Support external storage backend
-   - sql lite
-   - postgres
-   - etcd
+   - [ ] sql lite
+   - [ ] postgres
+   - [ ] etcd
 
-2. Implement user authentication & acl
+2. Auth & ACLS
+   - [X] User Auth
+   - [ ] ACL's
 
 ## Installation
 
