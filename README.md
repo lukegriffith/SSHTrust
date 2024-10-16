@@ -81,6 +81,8 @@ Once the SSH server is running, configured with a CA from the server. you can SS
 
 2. **SSH into the Server**:
    ```
+   # if signed pub is the cert name with -cert.pub appended,
+   # CertificateFile can be dropped as its auto discovered.
    ssh -i ~/.ssh/id_ed25519 -o CertificateFile=~/.ssh/id_ed25519-cert.pub -p 2222 testuser@localhost
    ```
 
