@@ -7,12 +7,12 @@ type ACL struct {
 }
 
 var _ = []ACL{
-	ACL{
+	{
 		CA:         "*",
 		Principals: []string{},
 		Permission: false,
 	},
-	ACL{
+	{
 		CA: "TestCA",
 		Principals: []string{
 			"group/test",

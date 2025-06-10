@@ -1,5 +1,5 @@
 # Use an official Ubuntu base image
-FROM ubuntu:20.04
+FROM rocky:9.3
 
 # Install OpenSSH server and required tools
 RUN apt-get update && apt-get install -y \
