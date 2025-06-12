@@ -42,6 +42,18 @@ make launchtest        # Run integration test script
 ./sshtrust login -u <username>         # Login and get JWT token
 ```
 
+## Environment Variables
+
+### JWT Configuration
+```bash
+export JWT_SECRET="your-secret-key-here"    # JWT signing secret (minimum 32 characters)
+```
+
+**JWT_SECRET**: Used for signing and validating JWT tokens in authenticated mode.
+- Can be a plain string (minimum 32 characters) or base64-encoded value
+- If not provided, a cryptographically secure random secret is generated for each server session
+- For production deployments, always set this to a strong, persistent secret
+
 ## Architecture
 
 ### Core Components

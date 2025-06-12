@@ -29,16 +29,27 @@
 
 ## Security Review
 
-**Critical Issues:**
-- 🔴 Hardcoded JWT secret: `auth.JWTSecret = []byte("secret")` (internal/server/main.go:32)
-- 🔴 No password salting mentioned in TODO (internal/server/main.go:29)
-- 🔴 JWT tokens valid for 72 hours (pkg/auth/user.go:71)
+**Resolved Issues:**
+- ✅ JWT secret: Now loads from JWT_SECRET environment variable with secure random fallback
+- ✅ JWT secret validation: Minimum 32-character length requirement with base64 support
+
+**Remaining Critical Issues:**
+- 🔴 Token file permissions: JWT tokens written with insecure permissions (internal/client/auth.go:85-97)
+- 🔴 Missing input validation: URL parameters not validated in handlers (pkg/handlers/ca.go:34, sign.go:26)
+- 🔴 Hardcoded server URLs: `http://localhost:8080` throughout client code
+
+**Medium Priority Security Issues:**
+- 🟡 JWT tokens valid for 72 hours (pkg/auth/user.go:71) - should be configurable
+- 🟡 Hardcoded server port `:8080` (internal/server/main.go:20)
+- 🟡 No rate limiting on authentication endpoints
+- 🟡 Missing request size limits
 
 **Good Practices:**
 - ✅ bcrypt password hashing
-- ✅ JWT-based authentication 
+- ✅ JWT-based authentication with secure secret management
 - ✅ Optional no-auth mode for development
 - ✅ Proper mutex usage for concurrent access
+- ✅ Cryptographically secure random JWT secret generation
 
 ## ACL Implementation Status
 
@@ -52,27 +63,37 @@
 ## Key Issues Identified
 
 **High Priority:**
-1. **Security:** Replace hardcoded JWT secret with environment variable
-2. **Dockerfile:** Broken - switched from Ubuntu to Rocky Linux but kept apt-get commands
+1. **Security:** Fix token file permissions (0600) and input validation
+2. **Configuration:** Remove hardcoded URLs and make server configurable
 3. **ACL Implementation:** Placeholder code not connected to authorization flow
+4. **Dockerfile:** Broken - switched from Ubuntu to Rocky Linux but kept apt-get commands
 
 **Medium Priority:**
-1. Typo in `InMemortCaStore` (should be `InMemoryCAStore`)
-2. Missing tests for auth and cmd packages
-3. No configuration management system
-4. JWT token expiry too long for production
+1. Add rate limiting and request size limits for security
+2. Make JWT expiration configurable via environment variables
+3. Typo in `InMemortCaStore` (should be `InMemoryCAStore`)
+4. Missing tests for auth and cmd packages
+5. No configuration management system
 
 **Low Priority:**
-1. Some inconsistent error messages
-2. TODO comments need addressing
-3. No graceful shutdown handling in server
+1. Clean up stale TODO comments
+2. Standardize logging approach (mix of log types)
+3. Add graceful shutdown handling in server
 
 ## Recommendations
 
-1. **Immediate:** Fix security issues (JWT secret, Dockerfile)
+1. **Immediate:** Fix remaining security issues (file permissions, input validation, configuration)
 2. **Next:** Complete ACL implementation with proper middleware integration
-3. **Future:** Add configuration management, improve test coverage
+3. **Future:** Add comprehensive configuration management, improve test coverage
+
+## Recent Improvements
+
+**JWT Security Enhancement (Fixed):**
+- Implemented environment variable support for JWT_SECRET
+- Added cryptographically secure random secret generation as fallback
+- Added input validation for secret length and base64 decoding
+- Updated documentation with configuration instructions
 
 ## Conclusion
 
-The codebase is in a solid foundational state with good architecture, but needs security hardening and completion of the ACL feature before production use.
+The codebase has a solid foundational architecture with recent security improvements to JWT handling. The remaining high-priority security issues (file permissions, input validation, configuration hardcoding) should be addressed before production deployment. The ACL feature remains incomplete and needs integration with the authorization flow.

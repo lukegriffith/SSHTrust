@@ -1,6 +1,11 @@
 package server
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"log"
+	"os"
+
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"            // Echo core library
 	"github.com/labstack/echo/v4/middleware" // Optional Echo middleware
@@ -15,6 +20,34 @@ const (
 	Port = ":8080"
 )
 
+// generateRandomJWTSecret generates a cryptographically secure random JWT secret
+func generateRandomJWTSecret() []byte {
+	bytes := make([]byte, 32) // 256 bits
+	if _, err := rand.Read(bytes); err != nil {
+		log.Fatal("Failed to generate random JWT secret:", err)
+	}
+	log.Println("Generated random JWT secret for this session")
+	return bytes
+}
+
+// loadJWTSecret loads JWT secret from environment variable or generates a random one
+func loadJWTSecret() []byte {
+	if secret := os.Getenv("JWT_SECRET"); secret != "" {
+		// If JWT_SECRET is base64 encoded, decode it
+		if decoded, err := base64.StdEncoding.DecodeString(secret); err == nil && len(decoded) >= 32 {
+			log.Println("Using JWT secret from JWT_SECRET environment variable (base64 decoded)")
+			return decoded
+		}
+		// Otherwise use as-is if it's long enough
+		if len(secret) >= 32 {
+			log.Println("Using JWT secret from JWT_SECRET environment variable")
+			return []byte(secret)
+		}
+		log.Println("JWT_SECRET environment variable is too short (minimum 32 characters), generating random secret")
+	}
+	return generateRandomJWTSecret()
+}
+
 // SetupServer configures the Echo instance and returns it for testing or running
 func SetupServer(noAuth bool) *echo.Echo {
 	e := echo.New()
@@ -28,8 +61,8 @@ func SetupServer(noAuth bool) *echo.Echo {
 
 	// TODO: do this properly and salt
 	auth.Users = &certStore.InMemoryUserList{}
-	// TODO: not this, load from config
-	auth.JWTSecret = []byte("secret")
+	// Load JWT secret from environment or generate random
+	auth.JWTSecret = loadJWTSecret()
 
 	// Serve the Swagger UI
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
